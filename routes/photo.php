@@ -18,9 +18,22 @@ Route::group(['middleware'=>'customauth'],function($router)
     Route::post('/makeprivate',[PhotoController::class,'makePrivate']); 
     Route::post('/makehidden',[PhotoController::class,'makeHidden']); 
 
+    Route::post('/removemail',[PhotoController::class,'removeEmail']); 
 
+
+    
 
 
 });
+
+Route::any('/storage/photos/{filename}',function(Request $request, $filename){
+    $headers = ["Cache-Control" => "no-store, no-cache, must-revalidate, max-age=0"];
+    $path = storage_path("app/photos".'/'.$filename);
+     if (file_exists($path)) {
+        return response()->download($path, null, $headers, null);
+    }
+    return response()->json(["error"=>"Error downloding file"],400);
+});
+
 
 ?>

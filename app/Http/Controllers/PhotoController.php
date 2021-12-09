@@ -76,6 +76,20 @@ class PhotoController extends Controller
             return response(['Message' => 'Sucessfully Updated'],200);
     }
 
+    function  removeEmail(LoginAccessRequest $request)
+    {
+           $connection=new DatabaseConnection();
+           $photo_id=new \MongoDB\BSON\ObjectId($request ->photo_id);
+           $connection->createconnection('photos')->updateOne([
+               "user_id"=>$request->data->_id,
+               "_id" => $photo_id, 
+               "Email.Mail"=>$request->Email,
+               "access" => "Private"], 
+               ['$pull'=>["Email"=>["Mail"=>$request->Email]]]
+            );
+            return response(['Message' => 'Sucessfully Removed'],200);
+    }
+
     function  makeHidden(LoginAccessRequest $request)
     {
            $connection=new DatabaseConnection();

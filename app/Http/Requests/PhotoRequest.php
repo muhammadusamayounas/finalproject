@@ -24,7 +24,7 @@ class PhotoRequest extends FormRequest
     public function rules()
     {
         return [
-            'file'=>'mimes:jpeg,jpg,png,gif|required|max:20000'
+            //'file'=>'mimes:jpeg,jpg,png,gif|required|max:20000'
         ];
     }
 }

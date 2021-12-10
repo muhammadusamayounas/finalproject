@@ -16,6 +16,9 @@ use App\Http\Requests\ForgetPasswordRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginAccessRequest;
 use App\Http\Controllers\TokenController;
+use Illuminate\Support\Facades\Storage;
+
+
 
 
 
@@ -33,8 +36,6 @@ class UserController extends Controller
         $age=$request->age;
         $password=Hash::make($request->password);
         $status=0;
-        $path = $request->file('file')->store('post');
-        $file = $path;
         $token =$token = rand(100,1000);
         $mail=$request->email;
         $connection->createconnection('users')->insertOne([
@@ -42,7 +43,7 @@ class UserController extends Controller
             'email'=>$email,
             'age'=>$age,
             'password'=>$password,
-            'file'=>$file,
+            'file'=>$this->storePhoto($request->file),
             'status'=>$status,
             'token'=>$token,
             'email_verified'=>FALSE
@@ -50,6 +51,7 @@ class UserController extends Controller
         $this->sendmail($mail,$token);
         return response()->json(["message"=>"Please verify your account"]);  
     }
+
     public function sendmail($email,$user_token)
     { 
         $details=[
@@ -84,8 +86,7 @@ class UserController extends Controller
 
     }
 
-    public function login(LoginRequest $request)//login 
-
+    public function login(LoginRequest $request)
      {
         $connection=new DatabaseConnection();
         $connect=$connection->createconnection("users");
@@ -137,4 +138,21 @@ class UserController extends Controller
             return response()->json(['message'=>'Logout']);
         }
     }
+
+    public function storePhoto($file)
+    {
+        $base64_string =  $file;  
+        $extension = explode('/', explode(':', substr($base64_string, 0, strpos($base64_string, ';')))[1])[1]; 
+        $replace = substr($base64_string, 0, strpos($base64_string, ',')+1);
+        $image = str_replace($replace, '', $base64_string);
+        $image = str_replace(' ', '+', $image);
+        $fileName = time().'.'.$extension;
+        $url= $_SERVER['HTTP_HOST'];
+        $pathurl=$url."/photo/storage/app/photos/".$fileName;
+        $path=storage_path('app\\photos').'\\'.$fileName;
+        file_put_contents($path,base64_decode($image));
+        return $pathurl;
+    }
+
+
 }

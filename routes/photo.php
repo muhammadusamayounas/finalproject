@@ -26,7 +26,7 @@ Route::group(['middleware'=>'customauth'],function($router)
 
 });
 
-Route::any('/storage/photos/{filename}',function(Request $request, $filename){
+Route::any('/storage/app/photos/{filename}',function(Request $request, $filename){
     $headers = ["Cache-Control" => "no-store, no-cache, must-revalidate, max-age=0"];
     $path = storage_path("app/photos".'/'.$filename);
      if (file_exists($path)) {

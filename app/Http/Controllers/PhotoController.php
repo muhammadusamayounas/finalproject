@@ -14,17 +14,13 @@ class PhotoController extends Controller
     public function uploadPhoto(PhotoRequest $request)
     {
         $connection=new DatabaseConnection();
-        $get = $request->file('file');
-        $array=(array)$get;
-        $picture=$array["\x00Symfony\Component\HttpFoundation\File\UploadedFile\x00originalName"];
-        $separate=explode('.',$picture);
-        $photoPath = $request->file('file')->store('photos');
-        $path=$_SERVER['HTTP_HOST']."/photo/storage/".$photoPath;
+        $getimagepath=$this->storePhoto($request->file);
+        $getextension= explode('.', $getimagepath[1]);
         $connection->createconnection('photos')->insertOne([
             "user_id" => $request->data->_id,
-            "name" => $separate[0],
-            "photo" => $path,
-            "extensions" => $separate[1],
+            "name" => $getextension[0],
+            "photo" => $getimagepath[0],
+            "extensions" => $getextension[1],
             "access" => "hidden",
             "date" => date("Y-m-d"),
             "time" => date("h:i:sa"),
@@ -105,4 +101,20 @@ class PhotoController extends Controller
             );
             return response(['Message' => 'Sucessfully Updated'],200);
     }
+
+    public function storePhoto($file)
+    {
+        $base64_string =  $file;  
+        $extension = explode('/', explode(':', substr($base64_string, 0, strpos($base64_string, ';')))[1])[1]; 
+        $replace = substr($base64_string, 0, strpos($base64_string, ',')+1);
+        $image = str_replace($replace, '', $base64_string);
+        $image = str_replace(' ', '+', $image);
+        $fileName = time().'.'.$extension;
+        $url= $_SERVER['HTTP_HOST'];
+        $pathurl=$url."/photo/storage/app/photos/".$fileName;
+        $path=storage_path('app\\photos').'\\'.$fileName;
+        file_put_contents($path,base64_decode($image));
+        return [$pathurl,$fileName];
+    }
+
 }

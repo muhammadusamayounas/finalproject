@@ -18,7 +18,7 @@ class authentication
      */
     public function handle(Request $request, Closure $next)
     {
-      $key=$request->access_token;     
+      $key = $request->bearerToken(); 
       $connection=new DatabaseConnection();
       $get=$connection->createconnection("users")->findOne([
             'remember_token' => $key

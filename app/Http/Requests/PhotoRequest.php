@@ -24,6 +24,9 @@ class PhotoRequest extends FormRequest
     public function rules()
     {
         return [
+            'access_token'=>'required',
+            'photo'=>'required|string',
+            'filename'=>'required'
             //'file'=>'mimes:jpeg,jpg,png,gif|required|max:20000'
         ];
     }

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ListPhotoController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\SearchPhotoController;
 
 
 Route::group(['middleware'=>'customauth'],function($router)
@@ -20,9 +21,7 @@ Route::group(['middleware'=>'customauth'],function($router)
 
     Route::post('/removemail',[PhotoController::class,'removeEmail']); 
 
-
-    
-
+    Route::post('/searchimage',[SearchPhotoController::class,'searchImage']); 
 
 });
 

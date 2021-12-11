@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Base64Decode;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -17,9 +18,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginAccessRequest;
 use App\Http\Controllers\TokenController;
 use Illuminate\Support\Facades\Storage;
-
-
-
+use App\Helpers\Base64DecodeHelper;
 
 
 class UserController extends Controller
@@ -37,13 +36,14 @@ class UserController extends Controller
         $password=Hash::make($request->password);
         $status=0;
         $token =$token = rand(100,1000);
-        $mail=$request->email;
+        $mail=$request->email;  
+        $profilephoto=Base64DecodeHelper::decode($request->profilephoto);
         $connection->createconnection('users')->insertOne([
             'name'=>$name,
             'email'=>$email,
             'age'=>$age,
             'password'=>$password,
-            'file'=>$this->storePhoto($request->file),
+            'file'=>$profilephoto[0],
             'status'=>$status,
             'token'=>$token,
             'email_verified'=>FALSE
@@ -54,9 +54,18 @@ class UserController extends Controller
 
     public function sendmail($email,$user_token)
     { 
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+        {
+            $url = "https://";
+        }
+        else
+        {
+            $url = "http://";
+        }
+        $url.= $_SERVER['HTTP_HOST'];
         $details=[
             'title'=>'You are successfully sign up to our SocialApp',
-             'body'=>'http://127.0.0.1:8000/api/welcome'.'/'.$email.'/'.$user_token];
+            'body'  =>'Please Verify your Account. Please Click on this link to verify ' .$url.'/api/welcome'.'/'.$email.'/'.$user_token];
 
         Mail::to($email)->send(new testmail($details));
         return "Email Send";
@@ -138,21 +147,5 @@ class UserController extends Controller
             return response()->json(['message'=>'Logout']);
         }
     }
-
-    public function storePhoto($file)
-    {
-        $base64_string =  $file;  
-        $extension = explode('/', explode(':', substr($base64_string, 0, strpos($base64_string, ';')))[1])[1]; 
-        $replace = substr($base64_string, 0, strpos($base64_string, ',')+1);
-        $image = str_replace($replace, '', $base64_string);
-        $image = str_replace(' ', '+', $image);
-        $fileName = time().'.'.$extension;
-        $url= $_SERVER['HTTP_HOST'];
-        $pathurl=$url."/photo/storage/app/photos/".$fileName;
-        $path=storage_path('app\\photos').'\\'.$fileName;
-        file_put_contents($path,base64_decode($image));
-        return $pathurl;
-    }
-
 
 }

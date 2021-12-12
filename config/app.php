@@ -181,6 +181,10 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        //AllresponseProvider
+        App\Providers\AllResponseProvider::class,
+
+
     ],
 
     /*

@@ -33,11 +33,15 @@ Route::group(['middleware'=>'api','perfix'=>'auth'],function($router){
     Route::post('/register',[UserController::class,'register']);
     Route::post('/login',[UserController::class,'login']);
     Route::get('/welcome/{email}/{verify_email}',[UserController::class,'welcome']);
-    Route::post('/logout',[UserController::class,'logout']);
-    Route::post('/readInfo',[UserController::class,'readInfo']);
-    Route::post('/readComment',[UserController::class,'readComment']);
-    Route::post('/seeAllFriend',[UserController::class,'seeAllFriend']);
+    Route::post('/logout',[UserController::class,'logout'])->middleware('customauth');
+    Route::post('/userinformation',[UserController::class,'userInformation'])->middleware('customauth');
+    Route::post('/updateuser',[UserController::class,'updateUser'])->middleware('customauth');
+
+
 });
+
+
+
 
 
 

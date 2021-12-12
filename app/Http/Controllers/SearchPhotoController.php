@@ -38,7 +38,7 @@ class SearchPhotoController extends Controller
         $response=$connection->createconnection("photos")->find($check);
         if($response==NULL)
         {
-            return response()->json(['message'=>'Not Found',404]);
+            return response()->notFound();
         }
         else
         {

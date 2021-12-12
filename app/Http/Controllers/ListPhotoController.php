@@ -18,7 +18,7 @@ class ListPhotoController extends Controller
         $data=$getdata->toArray();
         if($data==null)
         {
-          return response(['Message' => 'No Data Found'],404);
+          return response()->notFound();
         }
         else
         {

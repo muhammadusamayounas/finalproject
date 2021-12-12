@@ -29,7 +29,7 @@ class PhotoController extends Controller
             "date" => date("Y-m-d"),
             "time" => date("h:i:sa"),
         ]);   
-        return response(['Message' => 'Image Added'],200);
+        return response()->success();
     }
 
     function deletePhoto(DeletePhotoRequest $request)
@@ -40,7 +40,7 @@ class PhotoController extends Controller
             "user_id" => $request->data->_id,
             '_id' => $id
         ]); 
-        return response(['Message' => 'Deleted'],200);
+        return response()->success();
     }
 
     function  makePublic(MakePublicHiddenRequest $request)
@@ -56,8 +56,8 @@ class PhotoController extends Controller
               array('_id'=>$photo_id),
               array('$unset'=>array('Email'=>''))
             );
-            return response(['Message' => 'Sucessfully Updated'],200);
-    }
+            return response()->success();
+        }
 
     function  makePrivate(MakePublicHiddenRequest $request)
     {
@@ -73,8 +73,8 @@ class PhotoController extends Controller
                 '_id' => $photo_id],
                 ['$push'=>["Email"=>["Mail"=>$request->email]]]
              );
-            return response(['Message' => 'Sucessfully Updated'],200);
-    }
+             return response()->success();
+            }
 
     function  removeEmail(LoginAccessRequest $request)
     {
@@ -87,8 +87,8 @@ class PhotoController extends Controller
                "access" => "Private"], 
                ['$pull'=>["Email"=>["Mail"=>$request->Email]]]
             );
-            return response(['Message' => 'Sucessfully Removed'],200);
-    }
+            return response()->success();
+        }
 
     function  makeHidden(MakePublicHiddenRequest $request)
     {
@@ -103,6 +103,6 @@ class PhotoController extends Controller
               array('_id'=>$photo_id),
               array('$unset'=>array('Email'=>''))
             );
-            return response(['Message' => 'Sucessfully Updated'],200);
-    }
+            return response()->success();
+        }
 }

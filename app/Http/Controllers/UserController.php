@@ -192,9 +192,41 @@ class UserController extends Controller
             return response()->success();
         }
     }
+    public function forgetPassword(ForgetPasswordRequest $request)
+    {
+        $conn= new DataBaseConnection();
+        $token = rand(100,10000);
+        $details=[
+            'title' => 'Verification Key'. $token,
+            'body' => 'Plase Enter the Verfication Key to Enter New Password'
+        ];
+        $conn->createconnection('users')->updateOne(
+            [ 'email'=>$request->email],
+            [ '$set' => ['email_token'=>$token]]
+        );
+        $this->sendmail($request->email,$details);
+        return response()->success();
+    }
 
-    
-
+    public function setNewPassword(Request $request) 
+    {
+        $token=(int)$request->token;
+        $connection = new DataBaseConnection();
+        $password=Hash::make($request->password);
+        $data=(array)$connection->createconnection('users')->findOne(
+            ['token' => $token]
+        );
+        if($data==null)
+        {
+            response()->error();
+        }else{
+        $connection->createconnection('users')->updateOne(
+            [ 'email'=> $request->email ],
+            [ '$set' => ['password' => $password]]
+        );
+        return response()->success();
+        }
+    }
 }
 
     

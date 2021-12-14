@@ -28,7 +28,8 @@ class ChangePasswordRequest extends FormRequest
 
             'email'=>  'required|email',
             'verification_code'=>'required',
-            'password'=>'required|confirmed'
+            'password'=>'required'
         ];
     }
 }
+//|confirmed'

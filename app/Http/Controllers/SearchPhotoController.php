@@ -6,7 +6,11 @@ use App\Http\Requests\LoginAccessRequest;
 use App\Http\Requests\SearchPhotoRequest;
 use App\Service\DatabaseConnection;
 use Illuminate\Http\Request;
-
+     /**
+     * Search Photo
+     * Take upto five parameters($date,$time,$name,$extension,access)
+     * After Successfull Verification of user it display him image according to given parameters
+     */
 class SearchPhotoController extends Controller
 {
     public function searchImage(SearchPhotoRequest $request)

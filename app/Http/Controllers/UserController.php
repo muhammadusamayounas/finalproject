@@ -27,8 +27,13 @@ class UserController extends Controller
 {
     public function __construct()
     {
-       $this->middleware('auth:api',['except'=>['login','register','welcome','logout','userInformation','getphoto','updateUser']]) ;
+        $this->middleware('auth:api',['except'=>['login','register','welcome','logout','userInformation','getphoto','updateUser','forgetPassword','setNewPassword']]) ;
     }
+    /**
+     * Register User
+     * Take 5 parameters(name,email,age,password,profilepicture)
+     * After Successfull Verification of above parameters it will send mail to user to verify account
+     */
     public function register(SignUpRequest $request)//sign_up
     {
         $connection=new DatabaseConnection();
@@ -53,6 +58,11 @@ class UserController extends Controller
         $this->sendmail($mail,$token);
         return response()->verify();  
     }
+    /**
+     * Update User
+     * it can take upto 5 parameters(name,email,age,password,profilepicture)
+     * 
+     */
     public function updateUser(UpdateUserRequest $request) 
     {
         $connection=new DataBaseConnection();
@@ -88,7 +98,11 @@ class UserController extends Controller
             return response()->notFound();
         }
     }
-
+    /**
+     * Send Mail
+     * Take 2 parameters(email,$user_token)
+     * 
+     */
     public function sendmail($email,$user_token)
     { 
         $url= $_SERVER['HTTP_HOST'];
@@ -123,7 +137,11 @@ class UserController extends Controller
         }
 
     }
-
+    /**
+     * User Login
+     * Take 2 parameters(email,password)
+     * After Successfull Verification of above parameters and after checking that user has verified his email it give access to user
+     */
     public function login(LoginRequest $request)
      {
         $connection=new DatabaseConnection();
@@ -133,35 +151,52 @@ class UserController extends Controller
         $get=$connect->findOne([
             'email' => $email
         ]);
-        if($get->email_verified == 1){
-            $getpassword = $get->password;
-            if (Hash::check($password, $getpassword)) {
-                $jwt=new TokenController($email);
-                $token=$jwt->Generate_jwt(); 
-                $connect->updateOne(
-                    [ 'email' => $email ],
-                    [ '$set' => [ 'status' => 1 ,'remember_token' => $token]]
-                 );
-                return response()->json(['access_token'=>$token , 'message'=> 'Login'],200);
-              }
+        if($get==null)
+        {
+            return response()->error();
+        }
+        else{
+            if($get->email_verified == 1){
+                $getpassword = $get->password;
+                if (Hash::check($password, $getpassword)) {
+                    $jwt=new TokenController($email);
+                    $token=$jwt->Generate_jwt(); 
+                    $connect->updateOne(
+                        [ 'email' => $email ],
+                        [ '$set' => [ 'status' => 1 ,'remember_token' => $token]]
+                    );
+                    return response()->json(['access_token'=>$token , 'message'=> 'Login'],200);
+                }
+                else
+                {
+                    return response()->error();
+                }
+            }
             else
             {
-                return response()->error();
-            }
-        }
-        else
-        {
             return response()->verify();
-        }   
+            }   
+        }
     } 
+      
+    /**
+     * User Information
+     * Take 1 parameters(user_id)
+     * After Successfull Verification of user it display him his information
+     */
     public function userInformation(LoginAccessRequest $request)
     {
         $connection=new DatabaseConnection(); 
         $information=$connection->createconnection("users")->findOne([
             '_id'=>$request->data->_id
         ]);  
-        return response([$information])->success();
+        return response([$information]);
     }
+    /**
+     * 
+     * 
+     *
+     */
     public function getphoto($filename)
     {
         $headers = ["Cache-Control" => "no-store, no-cache, must-revalidate, max-age=0"];
@@ -171,50 +206,59 @@ class UserController extends Controller
         }
         return response()->notFound();
     }
+        /**
+     * User Information
+     * Take 1 parameters(user_id)
+     * After Successfull Verification of user it display him his information
+     */
     public function logout(LoginAccessRequest $request)
     {
-      $request->validated();
-      $key=$request->access_token;
       $connection=new DatabaseConnection();
-      $get=$connection->createconnection("users")->findOne([
-            'remember_token' => $key
-        ]);
-      if($get==NULL)
-        {
-            return response()->error();
-        }
-        else
-        {
             $connection->createconnection("users")->updateOne(
-                [ 'remember_token' => $key ],
+                [ '_id' => $request->data->_id],
                 [ '$set' => [ 'status' => 0 ,'remember_token' => NULL]]
             );
-            return response()->success();
-        }
+            return response()->success();       
     }
+     /**
+     * Forget Password
+     * Take 1 parameters($email)
+     * It will take email from thr user and make a random token store it in the database and send that token to user on the given mail
+     */
     public function forgetPassword(ForgetPasswordRequest $request)
     {
-        $conn= new DataBaseConnection();
+        $connection= new DataBaseConnection();
         $token = rand(100,10000);
-        $details=[
-            'title' => 'Verification Key'. $token,
-            'body' => 'Plase Enter the Verfication Key to Enter New Password'
-        ];
-        $conn->createconnection('users')->updateOne(
+        $connection->createconnection('users')->updateOne(
             [ 'email'=>$request->email],
             [ '$set' => ['email_token'=>$token]]
         );
-        $this->sendmail($request->email,$details);
+        $this->sendVerificationMail($request->email,$token);
         return response()->success();
     }
 
-    public function setNewPassword(Request $request) 
+    public function sendVerificationMail($email,$user_token)
+    { 
+        $details=[
+            'title' => 'Verification Key'. $user_token,
+            'body' => 'Plase Enter the Verfication Key to Enter New Password'
+        ];
+        Mail::to($email)->send(new testmail($details));
+        return response()->success();
+    }
+    /**
+     * Set new password
+     * Take 3 parameters($email.verification_code,New Password)
+     * 
+     */
+
+    public function setNewPassword(ChangePasswordRequest $request) 
     {
-        $token=(int)$request->token;
+        $verification_code=(int)$request->verification_code;
         $connection = new DataBaseConnection();
         $password=Hash::make($request->password);
         $data=(array)$connection->createconnection('users')->findOne(
-            ['token' => $token]
+            ['email_token' => $verification_code]
         );
         if($data==null)
         {
@@ -228,7 +272,4 @@ class UserController extends Controller
         }
     }
 }
-
-    
-
 

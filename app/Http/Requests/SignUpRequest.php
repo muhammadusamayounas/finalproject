@@ -26,9 +26,10 @@ class SignUpRequest extends FormRequest
         return [
             'name'=>'required|string',
             'email'=>'required|string|email',
-            'password'=>'required|string|min:8|max:20|confirmed',
+            'password'=>'required',
             'profilephoto'=>'string',
             'age'=>'required|integer'
         ];
     }
 }
+//|string|min:8|max:20|confirmed

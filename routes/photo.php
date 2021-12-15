@@ -24,6 +24,9 @@ Route::group(['middleware'=>'customauth'],function($router)
 
     Route::post('/searchimage',[SearchPhotoController::class,'searchImage']); 
 
+    Route::post('/getshareableimagelink',[PhotoController::class,'getShareableImageLink']); 
+
+
     
 
 

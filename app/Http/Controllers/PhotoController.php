@@ -9,6 +9,7 @@ use App\Http\Requests\PhotoRequest;
 use App\Helpers\Base64DecodeHelper;
 use App\Http\Requests\DeletePhotoRequest;
 use App\Http\Requests\MakePublicHiddenRequest;
+use App\Http\Requests\ShareableLinkRequest;
 
 date_default_timezone_set('Asia/Karachi');
 
@@ -104,5 +105,16 @@ class PhotoController extends Controller
               array('$unset'=>array('Email'=>''))
             );
             return response()->success();
+        }
+
+        public function getShareableImageLink(ShareableLinkRequest $request)
+        {
+            $connection=new DataBaseConnection();
+            $photo_id=new \MongoDB\BSON\ObjectId($request->photo_id);
+            $getlink=$connection->createconnection('photos')->findOne(
+                ['user_id' => $request->data->_id,
+                '_id'=>$photo_id]
+            );
+            return response(["Shareable_Image_Link"=>$getlink->photo]);
         }
 }
